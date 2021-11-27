@@ -1,6 +1,7 @@
 import "./style.css";
 import * as three from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { RectAreaLightHelper } from "three/examples/jsm/helpers/RectAreaLightHelper";
 import * as dat from "lil-gui";
 
 
@@ -17,14 +18,31 @@ const scene = new three.Scene();
 
 
 // Lights
-const ambientLight = new three.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
+const ambient_light = new three.AmbientLight(0xffffff, 0.5);
+scene.add(ambient_light);
+gui.add(ambient_light, "intensity").min(0).max(1).step(0.001);
 
-const pointLight = new three.PointLight(0xffffff, 0.5);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
-scene.add(pointLight);
+const directional_light = new three.DirectionalLight(0x00fffc, 0.3);
+directional_light.position.set(1, 0.25, 0);
+scene.add(directional_light);
+
+const hemisphere_light = new three.HemisphereLight(0xff0000, 0x0000ff, 2);
+scene.add(hemisphere_light);
+
+const point_light = new three.PointLight(0xff9000, 0.5, 10, 2);
+scene.add(point_light);
+
+const rect_area_light = new three.RectAreaLight(0x00ff00, 2, 1, 1);
+rect_area_light.position.set(-1.5, 0, 1.5);
+rect_area_light.lookAt(new three.Vector3());
+scene.add(rect_area_light);
+
+const spot_light = new three.SpotLight(0x78ff00, 0.5, 10, Math.PI * 0.1, 0.25, 1);
+spot_light.position.set(0, 2, 3);
+scene.add(spot_light);
+
+const helper = new three.SpotLightHelper(spot_light);
+scene.add(helper);
 
 
 // Material
