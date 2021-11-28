@@ -41,9 +41,20 @@ const spot_light = new three.SpotLight(0x78ff00, 0.5, 10, Math.PI * 0.1, 0.25, 1
 spot_light.position.set(0, 2, 3);
 scene.add(spot_light);
 
-const helper = new three.SpotLightHelper(spot_light);
-scene.add(helper);
+const hemisphere_light_helper = new three.HemisphereLightHelper(hemisphere_light, 0.2);
+scene.add(hemisphere_light_helper);
 
+const directional_light_helper = new three.DirectionalLightHelper(directional_light, 0.2);
+scene.add(directional_light_helper);
+
+const point_light_helper = new three.PointLightHelper(point_light, 0.2);
+scene.add(point_light_helper);
+
+const spot_light_helper = new three.SpotLightHelper(spot_light);
+scene.add(spot_light_helper);
+
+const rect_area_light_helper = new RectAreaLightHelper(rect_area_light);
+scene.add(rect_area_light_helper);
 
 // Material
 const material = new three.MeshStandardMaterial();
