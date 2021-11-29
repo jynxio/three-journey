@@ -2,6 +2,7 @@ import "./style.css";
 import * as three from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "lil-gui";
+import { TextureLoader } from "three";
 
 
 // Debug
@@ -14,6 +15,12 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new three.Scene();
+
+
+// Texture
+const texture_loader = new three.TextureLoader();
+const baked_shadow = texture_loader.load("/textures/bakedShadow.jpg");
+const simple_shadow = texture_loader.load("/textures/simpleShadow.jpg");
 
 
 // Light
@@ -34,7 +41,7 @@ directional_light.shadow.camera.bottom = -2;
 directional_light.shadow.camera.left = -2;
 directional_light.shadow.radius = 10;
 scene.add(directional_light)
-
+console.log(directional_light);
 const directional_light_camera_helper = new three.CameraHelper(directional_light.shadow.camera);
 directional_light_camera_helper.visible = false;
 scene.add(directional_light_camera_helper);
@@ -66,11 +73,15 @@ scene.add(spot_light.target);
 const point_light = new three.PointLight(0xffffff, 0.3);
 point_light.castShadow = true;
 point_light.position.set(-1, 1, 0);
+point_light.shadow.mapSize.width = 1024;
+point_light.shadow.mapSize.height = 1024;
+point_light.shadow.camera.near = 0.1;
+point_light.shadow.camera.far = 5;
 scene.add(point_light);
 
-const point_light_camera_helper = new three.CameraHelper(point_light.shadow.camera);
-scene.add(point_light_camera_helper);
-// TODO 从 PointLight 开始
+// const point_light_camera_helper = new three.CameraHelper(point_light.shadow.camera);
+// scene.add(point_light_camera_helper);
+
 
 // Materials
 const material = new three.MeshStandardMaterial();
@@ -93,7 +104,16 @@ const plane = new three.Mesh(
 plane.rotation.x = - Math.PI * 0.5;
 plane.position.y = - 0.5;
 plane.receiveShadow = true;
-scene.add(sphere, plane);
+
+const sphere_shadow = new three.Mesh(
+    new three.PlaneGeometry(1.5, 1.5),
+    new three.MeshBasicMaterial({ color: 0x000000, transparent: true, alphaMap: simple_shadow })
+);
+sphere_shadow.rotation.x = -Math.PI * 0.5;
+sphere_shadow.position.y = plane.position.y + 0.01;
+
+scene.add(sphere, sphere_shadow, plane);
+
 
 // Size
 const size = {
@@ -134,7 +154,7 @@ const renderer = new three.WebGLRenderer({
 });
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = false;
 // renderer.shadowMap.type = three.BasicShadowMap;
 // renderer.shadowMap.type = three.PCFSoftShadowMap;
 
@@ -149,6 +169,14 @@ function tick() {
     requestAnimationFrame(tick);
 
     const elapsed_time = clock.getElapsedTime();
+
+    sphere.position.x = Math.cos(elapsed_time) * 1.5;
+    sphere.position.z = Math.sin(elapsed_time) * 1.5;
+    sphere.position.y = Math.abs(Math.sin(elapsed_time * 3));
+
+    sphere_shadow.position.x = sphere.position.x;
+    sphere_shadow.position.z = sphere.position.z;
+    sphere_shadow.material.opacity = (1 - sphere.position.y) * 0.3;
 
     controls.update();
     renderer.render(scene, camera);
