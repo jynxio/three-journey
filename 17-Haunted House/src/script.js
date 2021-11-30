@@ -40,6 +40,28 @@ const bricks_ambient_occlusion_texture = texture_loader.load("/textures/bricks/a
 const bricks_normal_texture = texture_loader.load("/textures/bricks/normal.jpg");
 const bricks_roughness_texture = texture_loader.load("/textures/bricks/roughness.jpg");
 
+const grass_color_texture = texture_loader.load("/textures/grass/color.jpg");
+const grass_ambient_occlusion_texture = texture_loader.load("/textures/grass/ambientOcclusion.jpg");
+const grass_normal_texture = texture_loader.load("/textures/grass/normal.jpg");
+const grass_roughness_texture = texture_loader.load("/textures/grass/roughness.jpg");
+
+grass_color_texture.repeat.set(8, 8);
+grass_ambient_occlusion_texture.repeat.set(8, 8);
+grass_normal_texture.repeat.set(8, 8);
+grass_roughness_texture.repeat.set(8, 8);
+
+grass_color_texture.wrapS = three.RepeatWrapping;
+grass_color_texture.wrapT = three.RepeatWrapping;
+
+grass_ambient_occlusion_texture.wrapS = three.RepeatWrapping;
+grass_ambient_occlusion_texture.wrapT = three.RepeatWrapping;
+
+grass_normal_texture.wrapS = three.RepeatWrapping;
+grass_normal_texture.wrapT = three.RepeatWrapping;
+
+grass_roughness_texture.wrapS = three.RepeatWrapping;
+grass_roughness_texture.wrapT = three.RepeatWrapping;
+
 
 /**
  * Object
@@ -47,8 +69,14 @@ const bricks_roughness_texture = texture_loader.load("/textures/bricks/roughness
 // Floor
 const floor = new three.Mesh(
     new three.PlaneGeometry(20, 20),
-    new three.MeshStandardMaterial({ color: "#a9c388" })
+    new three.MeshStandardMaterial({
+        map: grass_color_texture,
+        aoMap: grass_ambient_occlusion_texture,
+        normalMap: grass_normal_texture,
+        roughnessMap: grass_roughness_texture,
+    })
 );
+floor.geometry.setAttribute("uv2", new three.Float32BufferAttribute(floor.geometry.attributes.uv.array, 2));
 floor.rotation.x = - Math.PI * 0.5;
 floor.position.y = 0;
 scene.add(floor);
@@ -141,6 +169,7 @@ for (let i = 0; i < 50; i++) {
     grave.position.set(x, 0.3, z);
     grave.rotation.z = (Math.random() - 0.5) * 0.4;
     grave.rotation.y = (Math.random() - 0.5) * 0.4;
+    grave.castShadow = true;
 
     graves.add(grave);
 
@@ -157,7 +186,7 @@ house.add(door_light);
  */
 const fog = new three.Fog(0x262837, 1, 15);
 scene.fog = fog;
-scene.background = new three.Color(0x262837);
+// scene.background = new three.Color(0x262837);
 
 
 /**
@@ -177,6 +206,52 @@ gui.add(moon_light.position, "y").min(- 5).max(5).step(0.001);
 gui.add(moon_light.position, "z").min(- 5).max(5).step(0.001);
 scene.add(moon_light);
 
+
+/**
+ * Ghosts
+ */
+const ghost_1 = new three.PointLight(0xff00ff, 2, 3);
+scene.add(ghost_1);
+
+const ghost_2 = new three.PointLight(0x00ffff, 2, 3);
+scene.add(ghost_2);
+
+const ghost_3 = new three.PointLight(0xffff00, 2, 3);
+scene.add(ghost_3);
+
+moon_light.castShadow = true;
+door_light.castShadow = true;
+ghost_1.castShadow = true;
+ghost_2.castShadow = true;
+ghost_3.castShadow = true;
+
+wall.castShadow = true;
+bush_1.castShadow = true;
+bush_2.castShadow = true;
+bush_3.castShadow = true;
+bush_4.castShadow = true;
+
+floor.receiveShadow = true;
+
+moon_light.shadow.mapSize.width = 256;
+moon_light.shadow.mapSize.height = 256;
+moon_light.shadow.camera.far = 15;
+
+door_light.shadow.mapSize.width = 256;
+door_light.shadow.mapSize.height = 256;
+door_light.shadow.camera.far = 7;
+
+ghost_1.shadow.mapSize.width = 256;
+ghost_1.shadow.mapSize.height = 256;
+ghost_1.shadow.camera.far = 7;
+
+ghost_2.shadow.mapSize.width = 256;
+ghost_2.shadow.mapSize.height = 256;
+ghost_2.shadow.camera.far = 7;
+
+ghost_3.shadow.mapSize.width = 256;
+ghost_3.shadow.mapSize.height = 256;
+ghost_3.shadow.camera.far = 7;
 
 /**
  * Size
@@ -223,7 +298,9 @@ const renderer = new three.WebGLRenderer({
 });
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-// renderer.setClearColor(0x262837);
+renderer.setClearColor(0x262837);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = three.PCFSoftShadowMap;
 
 
 /**
@@ -238,6 +315,24 @@ function tick() {
     window.requestAnimationFrame(tick);
 
     const elapsed_time = clock.getElapsedTime();
+
+    // Ghost animate
+    const ghost_1_angle = elapsed_time * 0.5;
+    ghost_1.position.x = Math.cos(ghost_1_angle) * 4;
+    ghost_1.position.z = Math.sin(ghost_1_angle) * 4;
+    ghost_1.position.y = Math.sin(elapsed_time * 3);
+
+    const ghost_2_angle = -elapsed_time * 0.32;
+    ghost_2.position.x = Math.cos(ghost_2_angle) * 5;
+    ghost_2.position.z = Math.sin(ghost_2_angle) * 5;
+    ghost_2.position.y = Math.sin(elapsed_time * 4) + Math.sin(elapsed_time * 2.5);
+
+    const ghost_3_angle = -elapsed_time * 0.18;
+    ghost_3.position.x = Math.cos(ghost_3_angle) * (7 + Math.sin(elapsed_time * 0.32));
+    ghost_3.position.z = Math.sin(ghost_3_angle) * (7 + Math.sin(elapsed_time * 0.5));
+    ghost_3.position.y = Math.sin(elapsed_time * 4) + Math.sin(elapsed_time * 2.5);
+
+    //
 
     controls.update();
     renderer.render(scene, camera);
