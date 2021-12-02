@@ -21,16 +21,36 @@ const scene = new three.Scene();
  * Textures
  */
 const texture_loader = new three.TextureLoader();
+const particle_texture = texture_loader.load("/textures/particles/2.png");
 
 
 /**
- * Test cube
+ * Particles
  */
-const cube = new three.Mesh(
-    new three.BoxGeometry(1, 1, 1),
-    new three.MeshBasicMaterial()
-);
-scene.add(cube);
+// Geometry
+const particle_geometry = new three.BufferGeometry();
+
+const count = 5000;
+const positions = new Float32Array(count * 3);
+
+for (let i = 0; i < positions.length; i++) positions[i] = (Math.random() - 0.5) * 10;
+
+particle_geometry.setAttribute("position", new three.BufferAttribute(positions, 3));
+
+// Material
+const particle_material = new three.PointsMaterial({
+    size: 0.1,
+    sizeAttenuation: true,
+    transparent: true,
+    color: 0xff88cc,
+    map: particle_texture,
+    alphaMap: particle_texture,
+    alphaTest: 0.001,
+});
+
+// Points
+const particle = new three.Points(particle_geometry, particle_material);
+scene.add(particle);
 
 
 /**
