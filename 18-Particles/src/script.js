@@ -30,22 +30,29 @@ const particle_texture = texture_loader.load("/textures/particles/2.png");
 // Geometry
 const particle_geometry = new three.BufferGeometry();
 
-const count = 5000;
+const count = 20000;
 const positions = new Float32Array(count * 3);
+const colors = new Float32Array(count * 3);
 
 for (let i = 0; i < positions.length; i++) positions[i] = (Math.random() - 0.5) * 10;
+for (let i = 0; i < positions.length; i++) colors[i] = Math.random();
 
 particle_geometry.setAttribute("position", new three.BufferAttribute(positions, 3));
+particle_geometry.setAttribute("color", new three.BufferAttribute(colors, 3));
 
 // Material
 const particle_material = new three.PointsMaterial({
     size: 0.1,
     sizeAttenuation: true,
     transparent: true,
-    color: 0xff88cc,
+    // color: 0xffffff,
     map: particle_texture,
     alphaMap: particle_texture,
-    alphaTest: 0.001,
+    // alphaTest: 0.001,
+    // depthTest: false,
+    depthWrite: false,
+    blending: three.AdditiveBlending,
+    vertexColors: true,
 });
 
 // Points
@@ -109,6 +116,18 @@ function tick() {
     window.requestAnimationFrame(tick);
 
     const elapsed_time = clock.getElapsedTime();
+
+    for (let i = 0; i < count; i++) {
+
+        const x_index = i * 3;
+        const y_index = i * 3 + 1;
+
+        const x_value = particle_geometry.attributes.position.array[x_index];
+        particle_geometry.attributes.position.array[y_index] = Math.sin(elapsed_time + x_value);
+
+    }
+
+    particle_geometry.attributes.position.needsUpdate = true;
 
     controls.update();
     renderer.render(scene, camera);
