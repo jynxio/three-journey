@@ -1,6 +1,15 @@
 import "./style.css";
+
 import * as three from "three";
+
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+
 import * as dat from "lil-gui";
 
 /**
@@ -27,9 +36,9 @@ const parameters = {
     size: 0.01,
     radius: 5,
     branches: 3,
-    spin: 1,
-    randomness: 0.2,
-    randomnessPower: 3,
+    spin: 5,
+    randomness: 1,
+    randomnessPower: 4,
     insideColor: 0xff6030,
     outsideColor: 0x1b3984,
 };
@@ -172,7 +181,43 @@ function tick() {
 
     const elapsed_time = clock.getElapsedTime();
 
+    points.rotation.y = elapsed_time * 0.1;
+
     controls.update();
     renderer.render(scene, camera);
+
+}
+
+/**
+ * 泛光
+ */
+floodlight();
+
+function floodlight() {
+
+    const composer = new EffectComposer(renderer);                                                                    // 效果合成器
+    const pass_render = new RenderPass(scene, camera);                                                                // 后期处理（基本）
+    const pass_bloom = new UnrealBloomPass(new three.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85); // 后期处理（泛光）
+
+    pass_bloom.renderToScreen = true; // 最终过程是否被渲染到屏幕
+    pass_bloom.threshold = 0;         // ？
+    pass_bloom.strength = 1;          // 强度
+    pass_bloom.radius = 0;            // 半径
+
+    composer.setSize(window.innerWidth, window.innerHeight); // 尺寸
+    composer.addPass(pass_render);                           // 将该后期处理环节添加至过程链
+    composer.addPass(pass_bloom);                            // 将该后期处理环节添加至过程链
+
+    renderer.setAnimationLoop(() => {
+
+        composer.render();  // 按顺序执行所有启用的后期处理环节, 来产生最终的帧
+
+    });
+
+    window.addEventListener("resize", _ => {
+
+        composer.setSize(window.innerWidth, window.innerHeight);
+
+    });
 
 }
