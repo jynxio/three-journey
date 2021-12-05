@@ -3,7 +3,6 @@ import * as three from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "lil-gui";
 
-
 /**
  * Base
  */
@@ -16,16 +15,105 @@ const canvas = document.querySelector("canvas.webgl");
 // Scene
 const scene = new three.Scene();
 
-
 /**
- * Test cube
+ * Galaxy
  */
-const cube = new three.Mesh(
-    new three.BoxGeometry(1, 1, 1),
-    new three.MeshBasicMaterial()
-);
-scene.add(cube);
+let geometry;
+let material;
+let points;
 
+const parameters = {
+    count: 100000,
+    size: 0.01,
+    radius: 5,
+    branches: 3,
+    spin: 1,
+    randomness: 0.2,
+    randomnessPower: 3,
+    insideColor: 0xff6030,
+    outsideColor: 0x1b3984,
+};
+
+gui.add(parameters, "count").min(100).max(1000000).step(100).onFinishChange(generateGalaxy);
+gui.add(parameters, "size").min(0.001).max(0.1).step(0.001).onFinishChange(generateGalaxy);
+gui.add(parameters, "radius").min(0.01).max(20).step(0.01).onFinishChange(generateGalaxy);
+gui.add(parameters, "branches").min(2).max(20).step(1).onFinishChange(generateGalaxy);
+gui.add(parameters, "spin").min(-5).max(5).step(0.001).onFinishChange(generateGalaxy);
+gui.add(parameters, "randomness").min(0).max(2).step(0.001).onFinishChange(generateGalaxy);
+gui.add(parameters, "randomnessPower").min(1).max(10).step(0.001).onFinishChange(generateGalaxy);
+gui.addColor(parameters, "insideColor").onFinishChange(generateGalaxy);
+gui.addColor(parameters, "outsideColor").onFinishChange(generateGalaxy);
+
+generateGalaxy(parameters);
+
+function generateGalaxy() {
+
+    if (points) {
+
+        geometry.dispose();
+        material.dispose();
+        scene.remove(points);
+
+    }
+
+    /**
+     * Geometry
+     */
+    geometry = new three.BufferGeometry();
+
+    const positions = new Float32Array(parameters.count * 3);
+    const colors = new Float32Array(parameters.count * 3);
+
+    const color_inside = new three.Color(parameters.insideColor);
+    const color_outside = new three.Color(parameters.outsideColor);
+
+    for (let i = 0; i < parameters.count; i++) {
+
+        const i_3 = i * 3;
+
+        const radius = Math.random() * parameters.radius;
+        const spin_angle = radius * parameters.spin;
+        const branch_angle = (i % parameters.branches) / parameters.branches * Math.PI * 2;
+
+        //
+        const random_x = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+        const random_y = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+        const random_z = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+
+        positions[i_3] = Math.cos(branch_angle + spin_angle) * radius + random_x;
+        positions[i_3 + 1] = random_y;
+        positions[i_3 + 2] = Math.sin(branch_angle + spin_angle) * radius + random_z;
+
+        //
+        const mixed_color = color_inside.clone().lerp(color_outside, radius / parameters.radius);
+
+        colors[i_3] = mixed_color.r;
+        colors[i_3 + 1] = mixed_color.g;
+        colors[i_3 + 2] = mixed_color.b;
+
+    }
+
+    geometry.setAttribute("position", new three.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new three.BufferAttribute(colors, 3));
+
+    /**
+     * Material
+     */
+    material = new three.PointsMaterial({
+        size: parameters.size,
+        sizeAttenuation: true,
+        depthWrite: false,
+        blending: three.AdditiveBlending,
+        vertexColors: true,
+    });
+
+    /**
+     * Points
+     */
+    points = new three.Points(geometry, material);
+    scene.add(points);
+
+}
 
 /**
  * Size
@@ -48,7 +136,6 @@ window.addEventListener("resize", () => {
 
 })
 
-
 /**
  * Camera
  */
@@ -63,7 +150,6 @@ scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
-
 /**
  * Renderer
  */
@@ -72,7 +158,6 @@ const renderer = new three.WebGLRenderer({
 });
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
 
 /**
  * Animate
