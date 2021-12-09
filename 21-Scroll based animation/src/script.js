@@ -87,6 +87,20 @@ window.addEventListener("scroll", _ => {
 });
 
 /**
+ * Cursor
+ */
+const cursor = {};
+cursor.x = 0;
+cursor.y = 0;
+
+window.addEventListener("mousemove", event => {
+
+    cursor.x = event.clientX / (size.width - 1) - 0.5;
+    cursor.y = event.clientY / (size.height - 1) - 0.5;
+
+});
+
+/**
  * Size
  */
 const size = {
@@ -110,10 +124,14 @@ window.addEventListener("resize", () => {
 /**
  * Camera
  */
+// Group
+const camera_group = new three.Group();
+scene.add(camera_group);
+
 // Base camera
 const camera = new three.PerspectiveCamera(35, size.width / size.height, 0.1, 100);
 camera.position.z = 6;
-scene.add(camera);
+camera_group.add(camera);
 
 /**
  * Renderer
@@ -126,6 +144,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  * Animate
  */
 const clock = new three.Clock();
+let previous_time = 0;
+
 const section_meshs = [torus, cone, torusknot];
 
 tick();
@@ -135,7 +155,11 @@ function tick() {
     window.requestAnimationFrame(tick);
 
     const elapsed_time = clock.getElapsedTime();
+    const delta_time = elapsed_time - previous_time;
 
+    previous_time = elapsed_time;
+
+    // Animate Object
     section_meshs.forEach(item => {
 
         item.rotation.x = elapsed_time * 0.1;
@@ -143,8 +167,15 @@ function tick() {
 
     });
 
-    camera.position.y = - scroll_y / size.height * objects_distance;
+    // Animate camera
+    camera_group.position.y = - scroll_y / size.height * objects_distance;
 
+    const parallax_x = cursor.x * 0.5;
+    const parallax_y = - cursor.y * 0.5;
+    // camera.position.x = parallax_x; // 线性运动
+    // camera.position.y = parallax_y; // 线性运动
+    camera.position.x += (parallax_x - camera.position.x) * 5 * delta_time;
+    camera.position.y += (parallax_y - camera.position.y) * 5 * delta_time;
     renderer.render(scene, camera);
 
 }
