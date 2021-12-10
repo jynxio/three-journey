@@ -4,6 +4,8 @@ import * as three from "three";
 
 import * as dat from "lil-gui";
 
+import gsap from "gsap";
+
 /**
  * Debug
  */
@@ -115,10 +117,30 @@ scene.add(directional_light);
  * Scroll
  */
 let scroll_y = window.scrollY;
+let current_section = 0;
 
 window.addEventListener("scroll", _ => {
 
     scroll_y = window.scrollY;
+
+    const new_section = Math.round(scroll_y / size.height);
+
+    if (new_section !== current_section) {
+
+        current_section = new_section;
+
+        gsap.to(
+            section_meshs[current_section].rotation,
+            {
+                duration: 1.5,
+                ease: "power2.inOut",
+                x: "+=6",
+                y: "+=3",
+                z: "+=1.5",
+            }
+        );
+
+    }
 
 });
 
@@ -196,8 +218,8 @@ function tick() {
     // Animate Object
     section_meshs.forEach(item => {
 
-        item.rotation.x = elapsed_time * 0.1;
-        item.rotation.y = elapsed_time * 0.12;
+        item.rotation.x += delta_time * 0.1;
+        item.rotation.y += delta_time * 0.12;
 
     });
 
