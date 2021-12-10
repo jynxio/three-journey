@@ -15,7 +15,12 @@ const parameters = {
 
 gui
     .addColor(parameters, "materialColor")
-    .onChange(_ => material.color.set(parameters.materialColor));
+    .onChange(_ => {
+
+        material.color.set(parameters.materialColor);
+        particle_material.color.set(parameters.materialColor);
+
+    });
 
 /**
  * Base
@@ -67,6 +72,37 @@ torusknot.position.y = - objects_distance * 2;
 torus.position.x = 2;
 cone.position.x = -2;
 torusknot.position.x = 2;
+
+const section_meshs = [torus, cone, torusknot];
+
+/**
+ * Particle
+ */
+// Geometry
+const particle_count = 200;
+const positions = new Float32Array(particle_count * 3);
+
+for (let i = 0; i < particle_count; i++) {
+
+    positions[i * 3 + 0] = (Math.random() - 0.5) * 10;
+    positions[i * 3 + 1] = - Math.random() * objects_distance * section_meshs.length + objects_distance * 0.5;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+
+}
+
+const particle_geometry = new three.BufferGeometry();
+particle_geometry.setAttribute("position", new three.BufferAttribute(positions, 3));
+
+// Material
+const particle_material = new three.PointsMaterial({
+    color: parameters.materialColor,
+    sizeAttenuation: true,
+    size: 0.03,
+});
+
+// Point
+const particle = new three.Points(particle_geometry, particle_material);
+scene.add(particle);
 
 /**
  * Light
@@ -145,8 +181,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  */
 const clock = new three.Clock();
 let previous_time = 0;
-
-const section_meshs = [torus, cone, torusknot];
 
 tick();
 
