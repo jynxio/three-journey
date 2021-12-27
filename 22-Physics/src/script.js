@@ -77,10 +77,10 @@ scene.add(floor);
 /**
  * Lights
  */
-const ambient_light = new three.ambient_light(0xffffff, 0.7);
+const ambient_light = new three.AmbientLight(0xffffff, 0.7);
 scene.add(ambient_light);
 
-const directional_light = new three.directional_light(0xffffff, 0.2);
+const directional_light = new three.DirectionalLight(0xffffff, 0.2);
 directional_light.castShadow = true;
 directional_light.shadow.mapSize.set(1024, 1024);
 directional_light.shadow.camera.far = 15;
