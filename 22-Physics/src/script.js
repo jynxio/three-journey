@@ -4,13 +4,24 @@ import * as three from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+import cannon from "cannon";
+
 import * as dat from "lil-gui";
 
+import Stats from "stats.js";
 
 /**
  * Debug
  */
 const gui = new dat.GUI();
+
+
+/**
+ * Stats
+ */
+const stats = new Stats();
+stats.showPanel(0);
+document.body.prepend(stats.dom);
 
 
 /**
@@ -143,9 +154,25 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 
 /**
+ * Physics
+ */
+const world = new cannon.World();
+world.gravity.set(0, - 9.82, 0);
+
+const sphere_shape = new cannon.Sphere(0.5);
+const sphere_body = new cannon.Body({
+    mass: 1,
+    position: new cannon.Vec3(0, 3, 0),
+    shape: sphere_shape
+});
+world.addBody(sphere_body);
+
+
+/**
  * Animate
  */
 const clock = new three.Clock();
+let old_elapsed_time = 0;
 
 tick();
 
@@ -153,10 +180,24 @@ function tick() {
 
     window.requestAnimationFrame(tick);
 
+    stats.begin();
+
     const elapsed_time = clock.getElapsedTime();
+    const delta_time = elapsed_time - old_elapsed_time;
+    old_elapsed_time = elapsed_time;
+
+    // Update physics world
+    world.step(1 / 120, delta_time, 3);
+
+    // Update three world
+    sphere.position.x = sphere_body.position.x;
+    sphere.position.y = sphere_body.position.y;
+    sphere.position.z = sphere_body.position.z;
 
     controls.update();
 
     renderer.render(scene, camera);
+
+    stats.end();
 
 }
