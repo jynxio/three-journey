@@ -9,6 +9,7 @@ import cannon from "cannon";
 import * as dat from "lil-gui";
 
 import Stats from "stats.js";
+import { PositionalAudio } from "three";
 
 /**
  * Debug
@@ -107,13 +108,14 @@ debug_object.createSphere = _ => {
 };
 gui.add(debug_object, "createSphere");
 
+// Create Sphere
 const objects_to_update = [];
 const sphere_geometry = new three.SphereGeometry(1, 20, 20);
 const sphere_material = new three.MeshStandardMaterial({
-    metalness: 0.3,
-    roughness: 0.4,
+    metalness: 1,
+    roughness: 0,
     envMap: environmentMapTexture,
-    envMapIntensity: 0.5
+    envMapIntensity: 1
 });
 
 function createSphere(radius, position) {
@@ -121,12 +123,61 @@ function createSphere(radius, position) {
     // three.js
     const mesh = new three.Mesh(sphere_geometry, sphere_material);
     mesh.castShadow = true;
-    mesh.position.copy(position);
     mesh.scale.set(radius, radius, radius);
+    mesh.position.set(position.x, position.y, position.z);
     scene.add(mesh);
 
     // cannon.js
     const shape = new cannon.Sphere(radius);
+    const body = new cannon.Body({
+        mass: 1,
+        position: new cannon.Vec3(0, 3, 0),
+        shape: shape,
+        material: default_material
+    });
+    body.position.copy(position);
+    world.addBody(body);
+
+    // Save in objects to update
+    objects_to_update.push({ mesh, body });
+
+}
+
+// Create Box
+debug_object.createBox = _ => {
+
+    createBox(
+        Math.random(),
+        Math.random(),
+        Math.random(),
+        {
+            x: (Math.random() - 0.5) * 3,
+            y: 3,
+            z: (Math.random() - 0.5) * 3
+        }
+    );
+
+};
+gui.add(debug_object, "createBox");
+
+const box_geometry = new three.BoxGeometry(1, 1, 1);
+const box_material = new three.MeshStandardMaterial({
+    metalness: 1,
+    roughness: 0,
+    envMap: environmentMapTexture,
+    envMapIntensity: 0.5
+});
+
+function createBox(width, height, depth, position) {
+
+    // three.js
+    const mesh = new three.Mesh(box_geometry, box_material);
+    mesh.scale.set(width, height, depth);
+    mesh.position.set(position.x, position.y, position.z);
+    scene.add(mesh);
+
+    // Cannon.js
+    const shape = new cannon.Box(new cannon.Vec3(width * 0.5, height * 0.5, depth * 0.5));
     const body = new cannon.Body({
         mass: 1,
         position: new cannon.Vec3(0, 3, 0),
@@ -254,10 +305,20 @@ function tick() {
 
         const mesh = item.mesh;
         const body = item.body;
+        const body_position = body.position;
+        const body_quaternion = body.quaternion;
 
-        mesh.position.x = body.position.x;
-        mesh.position.y = body.position.y;
-        mesh.position.z = body.position.z;
+        mesh.position.set(
+            body_position.x,
+            body_position.y,
+            body_position.z
+        );
+        mesh.quaternion.set(
+            body_quaternion.x,
+            body_quaternion.y,
+            body_quaternion.z,
+            body_quaternion.w
+        );
 
     });
 
