@@ -159,13 +159,46 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const world = new cannon.World();
 world.gravity.set(0, - 9.82, 0);
 
+const concrete_material = new cannon.Material("concrete");
+const plastic_material = new cannon.Material("plastic");
+const concrete_plastic_contact_material = new cannon.ContactMaterial(
+    concrete_material,
+    plastic_material,
+    {
+        friction: 0.1,
+        restitution: 0.7
+    }
+);
+world.addContactMaterial(concrete_plastic_contact_material);
+
+const default_material = new cannon.Material("default");
+const default_contact_material = new cannon.ContactMaterial(
+    default_material,
+    default_material,
+    {
+        friction: 0.1,
+        restitution: 0.7
+    }
+);
+world.addContactMaterial(default_contact_material);
+world.defaultContactMaterial = default_contact_material;
+
 const sphere_shape = new cannon.Sphere(0.5);
 const sphere_body = new cannon.Body({
     mass: 1,
     position: new cannon.Vec3(0, 3, 0),
-    shape: sphere_shape
+    shape: sphere_shape,
+    // material: default_material
 });
 world.addBody(sphere_body);
+
+const floor_shape = new cannon.Plane();
+const floor_body = new cannon.Body();
+floor_body.mass = 0;
+// floor_body.material = default_material;
+floor_body.quaternion.setFromAxisAngle(new cannon.Vec3(-1, 0, 0), Math.PI * 0.5);
+floor_body.addShape(floor_shape);
+world.addBody(floor_body);
 
 
 /**
