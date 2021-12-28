@@ -14,6 +14,7 @@ import Stats from "stats.js";
  * Debug
  */
 const gui = new dat.GUI();
+const debug_object = {};
 
 
 /**
@@ -51,20 +52,94 @@ const environmentMapTexture = cubeTextureLoader.load([
 
 
 /**
- * Test sphere
+ * Physics
  */
-const sphere = new three.Mesh(
-    new three.SphereGeometry(0.5, 32, 32),
-    new three.MeshStandardMaterial({
-        metalness: 0.3,
-        roughness: 0.4,
-        envMap: environmentMapTexture,
-        envMapIntensity: 0.5
-    })
+const world = new cannon.World();
+world.gravity.set(0, - 9.82, 0);
+
+const concrete_material = new cannon.Material("concrete");
+const plastic_material = new cannon.Material("plastic");
+const concrete_plastic_contact_material = new cannon.ContactMaterial(
+    concrete_material,
+    plastic_material,
+    {
+        friction: 0.1,
+        restitution: 0.7
+    }
 );
-sphere.castShadow = true;
-sphere.position.y = 0.5;
-scene.add(sphere);
+world.addContactMaterial(concrete_plastic_contact_material);
+
+const default_material = new cannon.Material("default");
+const default_contact_material = new cannon.ContactMaterial(
+    default_material,
+    default_material,
+    {
+        friction: 0.1,
+        restitution: 0.7
+    }
+);
+world.addContactMaterial(default_contact_material);
+world.defaultContactMaterial = default_contact_material;
+
+const floor_shape = new cannon.Plane();
+const floor_body = new cannon.Body();
+floor_body.mass = 0;
+floor_body.quaternion.setFromAxisAngle(new cannon.Vec3(-1, 0, 0), Math.PI * 0.5);
+floor_body.addShape(floor_shape);
+world.addBody(floor_body);
+
+
+
+/**
+ * Utils
+ */
+debug_object.createSphere = _ => {
+
+    createSphere(
+        Math.random() * 0.5,
+        {
+            x: (Math.random() - 0.5) * 3,
+            y: 3,
+            z: (Math.random() - 0.5) * 3
+        }
+    );
+
+};
+gui.add(debug_object, "createSphere");
+
+const objects_to_update = [];
+const sphere_geometry = new three.SphereGeometry(1, 20, 20);
+const sphere_material = new three.MeshStandardMaterial({
+    metalness: 0.3,
+    roughness: 0.4,
+    envMap: environmentMapTexture,
+    envMapIntensity: 0.5
+});
+
+function createSphere(radius, position) {
+
+    // three.js
+    const mesh = new three.Mesh(sphere_geometry, sphere_material);
+    mesh.castShadow = true;
+    mesh.position.copy(position);
+    mesh.scale.set(radius, radius, radius);
+    scene.add(mesh);
+
+    // cannon.js
+    const shape = new cannon.Sphere(radius);
+    const body = new cannon.Body({
+        mass: 1,
+        position: new cannon.Vec3(0, 3, 0),
+        shape: shape,
+        material: default_material
+    });
+    body.position.copy(position);
+    world.addBody(body);
+
+    // Save in objects to update
+    objects_to_update.push({ mesh, body });
+
+}
 
 
 /**
@@ -154,54 +229,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 
 /**
- * Physics
- */
-const world = new cannon.World();
-world.gravity.set(0, - 9.82, 0);
-
-const concrete_material = new cannon.Material("concrete");
-const plastic_material = new cannon.Material("plastic");
-const concrete_plastic_contact_material = new cannon.ContactMaterial(
-    concrete_material,
-    plastic_material,
-    {
-        friction: 0.1,
-        restitution: 0.7
-    }
-);
-world.addContactMaterial(concrete_plastic_contact_material);
-
-const default_material = new cannon.Material("default");
-const default_contact_material = new cannon.ContactMaterial(
-    default_material,
-    default_material,
-    {
-        friction: 0.1,
-        restitution: 0.7
-    }
-);
-world.addContactMaterial(default_contact_material);
-world.defaultContactMaterial = default_contact_material;
-
-const sphere_shape = new cannon.Sphere(0.5);
-const sphere_body = new cannon.Body({
-    mass: 1,
-    position: new cannon.Vec3(0, 3, 0),
-    shape: sphere_shape,
-    // material: default_material
-});
-world.addBody(sphere_body);
-
-const floor_shape = new cannon.Plane();
-const floor_body = new cannon.Body();
-floor_body.mass = 0;
-// floor_body.material = default_material;
-floor_body.quaternion.setFromAxisAngle(new cannon.Vec3(-1, 0, 0), Math.PI * 0.5);
-floor_body.addShape(floor_shape);
-world.addBody(floor_body);
-
-
-/**
  * Animate
  */
 const clock = new three.Clock();
@@ -223,9 +250,16 @@ function tick() {
     world.step(1 / 120, delta_time, 3);
 
     // Update three world
-    sphere.position.x = sphere_body.position.x;
-    sphere.position.y = sphere_body.position.y;
-    sphere.position.z = sphere_body.position.z;
+    objects_to_update.forEach(item => {
+
+        const mesh = item.mesh;
+        const body = item.body;
+
+        mesh.position.x = body.position.x;
+        mesh.position.y = body.position.y;
+        mesh.position.z = body.position.z;
+
+    });
 
     controls.update();
 
