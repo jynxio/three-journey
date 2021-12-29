@@ -138,6 +138,7 @@ function createSphere(radius, position) {
         material: default_material
     });
     body.position.copy(position);
+    body.addEventListener("collide", playHitSound);
     world.addBody(body);
 
     // Save in objects to update
@@ -201,9 +202,14 @@ function createBox(width, height, depth, position) {
  */
 const hit_sound = new Audio("/sounds/hit.mp3");
 
-function playHitSound() {
+function playHitSound(collision) {
 
-    hit_sound.currentTime = 0; // 终止上一次音乐
+    const impact_strength = collision.contact.getImpactVelocityAlongNormal;
+
+    if (impact_strength < 1.5) return;
+
+    hit_sound.volume = Math.random(); // 随机音量
+    hit_sound.currentTime = 0;        // 终止上一次音乐
     hit_sound.play();
 
 }
