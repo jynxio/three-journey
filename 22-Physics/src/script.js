@@ -57,6 +57,8 @@ const environmentMapTexture = cubeTextureLoader.load([
  */
 const world = new cannon.World();
 world.gravity.set(0, - 9.82, 0);
+world.broadphase = new cannon.SAPBroadphase(world);
+world.allowSleep = true;
 
 const concrete_material = new cannon.Material("concrete");
 const plastic_material = new cannon.Material("plastic");
@@ -185,10 +187,24 @@ function createBox(width, height, depth, position) {
         material: default_material
     });
     body.position.copy(position);
+    body.addEventListener("collide", playHitSound);
     world.addBody(body);
 
     // Save in objects to update
     objects_to_update.push({ mesh, body });
+
+}
+
+
+/**
+ * Sounds
+ */
+const hit_sound = new Audio("/sounds/hit.mp3");
+
+function playHitSound() {
+
+    hit_sound.currentTime = 0; // 终止上一次音乐
+    hit_sound.play();
 
 }
 
