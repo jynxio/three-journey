@@ -4,7 +4,12 @@ import * as three from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+
 import * as dat from "lil-gui";
+
 
 /**
  * Base
@@ -17,6 +22,7 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new three.Scene();
+
 
 /**
  * Floor
@@ -32,6 +38,7 @@ const floor = new three.Mesh(
 floor.receiveShadow = true;
 floor.rotation.x = - Math.PI * 0.5;
 scene.add(floor);
+
 
 /**
  * Lights
@@ -49,6 +56,7 @@ directionalLight.shadow.camera.right = 7;
 directionalLight.shadow.camera.bottom = - 7;
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
+
 
 /**
  * Size
@@ -73,6 +81,7 @@ window.addEventListener("resize", _ => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 })
 
+
 /**
  * Camera
  */
@@ -86,6 +95,7 @@ const controls = new OrbitControls(camera, canvas);
 controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
 
+
 /**
  * Renderer
  */
@@ -96,6 +106,25 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = three.PCFSoftShadowMap;
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+
+/**
+ * Model
+ */
+const draco_loader = new DRACOLoader();
+draco_loader.setDecoderPath("/draco/");
+
+const gltf_loader = new GLTFLoader();
+gltf_loader.setDRACOLoader(draco_loader);
+gltf_loader.load(
+    "/models/Duck/glTF-Draco/Duck.gltf",
+    function onSuccess(gltf) {
+
+        scene.add(gltf.scene.children[0]);
+
+    }
+);
+
 
 /**
  * Animate
