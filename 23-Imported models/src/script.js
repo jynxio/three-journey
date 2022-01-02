@@ -111,16 +111,26 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 /**
  * Model
  */
+let mixer;
+
 const draco_loader = new DRACOLoader();
 draco_loader.setDecoderPath("/draco/");
 
 const gltf_loader = new GLTFLoader();
 gltf_loader.setDRACOLoader(draco_loader);
 gltf_loader.load(
-    "/models/Duck/glTF-Draco/Duck.gltf",
+    "/models/Fox/glTF/Fox.gltf",
     function onSuccess(gltf) {
 
-        scene.add(gltf.scene.children[0]);
+        // 渲染模型
+        gltf.scene.scale.set(0.025, 0.025, 0.025);
+        scene.add(gltf.scene);
+
+        // 动画
+        mixer = new three.AnimationMixer(gltf.scene);
+
+        const action = mixer.clipAction(gltf.animations[1]);
+        action.play();
 
     }
 );
@@ -141,6 +151,9 @@ function tick() {
     const elapsed_time = clock.getElapsedTime();
     const delta_time = elapsed_time - previous_time;
     previous_time = elapsed_time;
+
+    // 模型动画
+    mixer && mixer.update(delta_time);
 
     controls.update();
     renderer.render(scene, camera);
