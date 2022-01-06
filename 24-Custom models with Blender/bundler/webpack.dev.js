@@ -1,15 +1,15 @@
-const { merge } = require( "webpack-merge" );
+const { merge } = require("webpack-merge");
 
-const common = require( "./webpack.common.js" );
+const common = require("./webpack.common.js");
 
-module.exports = merge( common, {
+module.exports = merge(common, {
     mode: "development",
-    devtool: "eval-cheap-module-source-map",
+    devtool: "eval-cheap-module-source-map", // 激活源码映射：它既能提供质量较好的源码映射，又能提供较高的构建速度。
     devServer: {
-        static: "./",         // 指定资源的起寻地址。
-        compress: true,       // 激活后，将在打包前使用gzip来压缩static目录下的资源。// TODO
-        server: "http",       //
-        port: 8080,           //
-        open: true,           // 激活后，WDS会在服务器启动后使用默认浏览器来打开output目录下的inde.html。如果需要打开一个或多个指定的其他页面，或者更换浏览器，则需要额外设置。
+        static: "./",                        // 设置资源的起寻地址。
+        compress: true,                      // 激活gzip。
+        server: "http",                      // 设置网络传输协议。
+        port: 8080,                          // 设置端口号。
+        open: true,                          // 激活浏览器自启动。
     },
-} );
+});

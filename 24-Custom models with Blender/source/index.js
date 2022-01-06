@@ -2,11 +2,11 @@ import "/style/reset.css";
 
 import * as three from "three";
 
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js"
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 import * as dat from "lil-gui";
 
@@ -22,25 +22,15 @@ const scene = new three.Scene();
 
 
 /**
- * Model
- */
-const draco_loader = new DRACOLoader();
-draco_loader.setDecoderPath("/draco/");
-
-const gltf_loader = new GLTFLoader();
-gltf_loader.setDRACOLoader(draco_loader);
-
-
-/**
  * Floor
  */
 const floor = new three.Mesh(
-    new three.PlaneGeometry(50, 50),
+    new three.PlaneGeometry(10, 10),
     new three.MeshStandardMaterial({
         color: "#444444",
         metalness: 0,
         roughness: 0.5
-    }),
+    })
 );
 floor.receiveShadow = true;
 floor.rotation.x = - Math.PI * 0.5;
@@ -70,7 +60,7 @@ scene.add(directional_light);
  */
 const size = {
     width: window.innerWidth,
-    height: window.innerHeight,
+    height: window.innerHeight
 };
 
 window.addEventListener("resize", _ => {
@@ -86,7 +76,6 @@ window.addEventListener("resize", _ => {
     // Update renderer
     renderer.setSize(size.width, size.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
 })
 
 
@@ -98,7 +87,6 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = three.PCFSoftShadowMap;
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setAnimationLoop(render);
 document.body.appendChild(renderer.domElement);
 
 
@@ -107,29 +95,46 @@ document.body.appendChild(renderer.domElement);
  */
 // Base camera
 const camera = new three.PerspectiveCamera(75, size.width / size.height, 0.1, 100);
-camera.position.set(- 8, 4, 8);
+camera.position.set(2, 2, 2);
 scene.add(camera);
 
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 1, 0);
+controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
+
+
+/**
+ * Model
+ */
+const draco_loader = new DRACOLoader();
+draco_loader.setDecoderPath("/static/draco/");
+
+const gltf_loader = new GLTFLoader();
+gltf_loader.setDRACOLoader(draco_loader);
+gltf_loader.load(
+    "/static/model/hanburger-draco-gltfpipeline.glb",
+    function onSuccess(gltf) {
+
+        gltf.scene.scale.set(0.1, 0.1, 0.1);
+        gltf.scene.position.y = 0.5;
+        scene.add(gltf.scene);
+
+    }
+);
 
 
 /**
  * Animate
  */
-const clock = new three.Clock();
-let previous_time = 0;
+tick();
 
-function render() {
+function tick() {
 
-    const elapsed_time = clock.getElapsedTime();
-    const delta_time = elapsed_time - previous_time;
-    previous_time = elapsed_time;
+    window.requestAnimationFrame(tick);
 
     controls.update();
-
     renderer.render(scene, camera);
 
 }
+
