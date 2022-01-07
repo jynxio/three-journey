@@ -4,6 +4,8 @@ import * as three from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
 import * as dat from "lil-gui";
 
 
@@ -11,6 +13,7 @@ import * as dat from "lil-gui";
  * Base
  */
 // Debug
+const debug_object = {};
 const gui = new dat.GUI();
 
 // Scene
@@ -18,13 +21,67 @@ const scene = new three.Scene();
 
 
 /**
- * Test sphere
+ * Model
  */
-const testSphere = new three.Mesh(
-    new three.SphereGeometry(1, 32, 32),
-    new three.MeshBasicMaterial()
-);
-scene.add(testSphere);
+const gltf_loader = new GLTFLoader();
+gltf_loader.load("./static/model/flight-helmet/glTF/FlightHelmet.gltf", gltf => {
+
+    gltf.scene.scale.set(10, 10, 10);
+    gltf.scene.position.set(0, -4, 0);
+    gltf.scene.rotation.y = Math.PI * 0.5;
+    scene.add(gltf.scene);
+
+    gui.add(gltf.scene.rotation, "y").min(- Math.PI).max(Math.PI).step(0.001).name("rotation");
+
+    updateAllMaterial();
+
+});
+
+
+/**
+ * Environment map
+ */
+const cube_texture_loader = new three.CubeTextureLoader();
+const environment_map = cube_texture_loader.load([
+    "./static/texture/environment-map/0/px.jpg",
+    "./static/texture/environment-map/0/nx.jpg",
+    "./static/texture/environment-map/0/py.jpg",
+    "./static/texture/environment-map/0/ny.jpg",
+    "./static/texture/environment-map/0/pz.jpg",
+    "./static/texture/environment-map/0/nz.jpg",
+]);
+
+scene.background = environment_map;
+
+debug_object.envMapIntensity = 2.5;
+gui.add(debug_object, "envMapIntensity").min(0).max(10).step(0.001).onChange(updateAllMaterial);
+
+function updateAllMaterial() {
+
+    scene.traverse(child => {
+
+        if (child instanceof three.Mesh === false) return;
+        if (child.material instanceof three.MeshStandardMaterial === false) return;
+
+        child.material.envMap = environment_map;
+        child.material.envMapIntensity = debug_object.envMapIntensity;
+
+    });
+
+}
+
+
+/**
+ * Light
+ */
+const directional_light = new three.DirectionalLight(0xffffff, 3);
+directional_light.position.set(0.25, 3, -2.25);
+scene.add(directional_light);
+
+gui.add(directional_light, "intensity").min(0).max(10).step(0.001).name("light intensity");
+gui.add(directional_light.position, "x").min(-5).max(5).step(0.001).name("light X");
+gui.add(directional_light.position, "y").min(-5).max(5).step(0.001).name("light Y");
+gui.add(directional_light.position, "z").min(-5).max(5).step(0.001).name("light Z");
 
 
 /**
@@ -58,6 +115,8 @@ window.addEventListener("resize", _ => {
 const renderer = new three.WebGLRenderer();
 renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.physicallyCorrectLights = true;
+renderer.outputEncoding = three.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 
 
