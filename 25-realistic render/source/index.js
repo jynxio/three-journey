@@ -24,14 +24,23 @@ const scene = new three.Scene();
  * Model
  */
 const gltf_loader = new GLTFLoader();
-gltf_loader.load("./static/model/flight-helmet/glTF/FlightHelmet.gltf", gltf => {
+// gltf_loader.load("./static/model/flight-helmet/glTF/FlightHelmet.gltf", gltf => {
 
-    gltf.scene.scale.set(10, 10, 10);
-    gltf.scene.position.set(0, -4, 0);
-    gltf.scene.rotation.y = Math.PI * 0.5;
+//     gltf.scene.scale.set(10, 10, 10);
+//     gltf.scene.position.set(0, -4, 0);
+//     gltf.scene.rotation.y = Math.PI * 0.5;
+//     scene.add(gltf.scene);
+
+//     gui.add(gltf.scene.rotation, "y").min(- Math.PI).max(Math.PI).step(0.001).name("rotation");
+
+//     updateAllMaterial();
+
+// });
+gltf_loader.load("./static/model/hamburger.glb", gltf => {
+
+    gltf.scene.scale.set(0.3, 0.3, 0.3);
+    gltf.scene.position.set(0, -1, 0);
     scene.add(gltf.scene);
-
-    gui.add(gltf.scene.rotation, "y").min(- Math.PI).max(Math.PI).step(0.001).name("rotation");
 
     updateAllMaterial();
 
@@ -66,6 +75,8 @@ function updateAllMaterial() {
 
         child.material.envMap = environment_map;
         child.material.envMapIntensity = debug_object.envMapIntensity;
+        child.castShadow = true;
+        child.receiveShadow = true;
 
     });
 
@@ -77,6 +88,10 @@ function updateAllMaterial() {
  */
 const directional_light = new three.DirectionalLight(0xffffff, 3);
 directional_light.position.set(0.25, 3, -2.25);
+directional_light.castShadow = true;
+directional_light.shadow.camera.far = 15;
+directional_light.shadow.mapSize.set(1024, 1024);
+directional_light.shadow.normalBias = 0.05;
 scene.add(directional_light);
 
 gui.add(directional_light, "intensity").min(0).max(10).step(0.001).name("light intensity");
@@ -120,6 +135,8 @@ renderer.physicallyCorrectLights = true;
 renderer.outputEncoding = three.sRGBEncoding;
 renderer.toneMapping = three.ReinhardToneMapping;
 renderer.toneMappingExposure = 3;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = three.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 gui.add(renderer, "toneMapping", {
