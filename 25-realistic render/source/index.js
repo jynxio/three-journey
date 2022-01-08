@@ -50,6 +50,7 @@ const environment_map = cube_texture_loader.load([
     "./static/texture/environment-map/0/pz.jpg",
     "./static/texture/environment-map/0/nz.jpg",
 ]);
+environment_map.encoding = three.sRGBEncoding;
 
 scene.background = environment_map;
 
@@ -117,7 +118,17 @@ renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.physicallyCorrectLights = true;
 renderer.outputEncoding = three.sRGBEncoding;
+renderer.toneMappingExposure = 3;
 document.body.appendChild(renderer.domElement);
+
+gui.add(renderer, "toneMapping", {
+    No: three.NoToneMapping,
+    Linear: three.LinearToneMapping,
+    Reinhard: three.ReinhardToneMapping,
+    Cineon: three.CineonToneMapping,
+    ACESFilmic: three.ACESFilmicToneMapping,
+})
+gui.add(renderer, "toneMappingExposure").min(0).max(10).step(0.001);
 
 
 /**
