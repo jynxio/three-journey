@@ -118,6 +118,7 @@ renderer.setSize(size.width, size.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.physicallyCorrectLights = true;
 renderer.outputEncoding = three.sRGBEncoding;
+renderer.toneMapping = three.ReinhardToneMapping;
 renderer.toneMappingExposure = 3;
 document.body.appendChild(renderer.domElement);
 
