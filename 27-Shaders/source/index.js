@@ -28,6 +28,8 @@ const camera = new three.PerspectiveCamera(
     100,
 );
 
+camera.position.set( 0.25, - 0.25, 1 );
+
 scene.add( camera );
 
 /* Controls */
@@ -48,10 +50,22 @@ window.addEventListener( "resize", _ => {
 } );
 
 /* Render */
+const clock = new three.Clock();
+
 renderer.setAnimationLoop( function loop() {
+
+    const elapsed_time = clock.getElapsedTime();
 
     controls.update();
 
     renderer.render( scene, camera );
 
 } );
+
+/* ------------------------------------------------------------------------------------------------------ */
+/* Test Mesh */
+const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
+const material = new three.MeshBasicMaterial();
+const mesh = new three.Mesh( geometry, material );
+
+scene.add( mesh );
