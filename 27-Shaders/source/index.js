@@ -8,6 +8,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import Gui from "lil-gui";
 
+import vertex_shader from "./shader/vertex.glsl";
+
+import fragment_shader from "./shader/fragment.glsl";
+
 /* ------------------------------------------------------------------------------------------------------ */
 /* Renderer */
 const renderer = new three.WebGLRenderer( { antialias: window.devicePixelRatio < 2 } );
