@@ -70,24 +70,8 @@ renderer.setAnimationLoop( function loop() {
 /* Test Mesh */
 const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
 const material = new three.RawShaderMaterial( {
-    vertexShader: `
-        uniform mat4 projectionMatrix;
-        uniform mat4 viewMatrix;
-        uniform mat4 modelMatrix;
-
-        attribute vec3 position;
-
-        void main() {
-            gl_Position = projectionMatrix * viewMatrix * vec4( position, 1.0 );
-        }
-    `,
-    fragmentShader: `
-        precision mediump float;
-
-        void main() {
-            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
-        }
-    `,
+    vertexShader: vertex_shader,
+    fragmentShader: fragment_shader,
 } );
 const mesh = new three.Mesh( geometry, material );
 
