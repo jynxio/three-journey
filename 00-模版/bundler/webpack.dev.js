@@ -1,8 +1,8 @@
-const { merge } = require("webpack-merge");
+const { merge } = require( "webpack-merge" );
 
-const common = require("./webpack.common.js");
+const common = require( "./webpack.common.js" );
 
-module.exports = merge(common, {
+module.exports = merge( common, {
     mode: "development",
     devtool: "eval-cheap-module-source-map", // 激活源码映射：它既能提供质量较好的源码映射，又能提供较高的构建速度。
     devServer: {
@@ -12,4 +12,4 @@ module.exports = merge(common, {
         port: 8080,                          // 设置端口号。
         open: true,                          // 激活浏览器自启动。
     },
-});
+} );
