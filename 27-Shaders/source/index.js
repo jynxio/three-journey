@@ -8,6 +8,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import Gui from "lil-gui";
 
+import test_vertex_shader from "./vertex.glsl";
+
+import test_fragment_shader from "./fragment.glsl";
+
 /* ------------------------------------------------------------------------------------------------------ */
 /* Renderer */
 const renderer = new three.WebGLRenderer( { antialias: window.devicePixelRatio < 2 } );
@@ -21,20 +25,15 @@ document.body.append( renderer.domElement );
 const scene = new three.Scene();
 
 /* Camera */
-const camera = new three.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.01,
-    100,
-);
+const camera = new three.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 100 );
 
+camera.position.set(0.25, - 0.25, 1)
 scene.add( camera );
 
 /* Controls */
 const controls = new OrbitControls( camera, renderer.domElement );
 
 controls.enableDamping = true;
-controls.target = new three.Vector3( 0, 0, 0.01 );
 
 /* Resize */
 window.addEventListener( "resize", _ => {
@@ -57,4 +56,11 @@ renderer.setAnimationLoop( function loop() {
 } );
 
 /* My code */
-const material = new three.RawShaderMaterial();
+const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
+const material = new three.RawShaderMaterial( {
+    vertexShader: test_vertex_shader,
+    fragmentShader: test_fragment_shader,
+} );
+const mesh = new three.Mesh( geometry, material );
+
+scene.add( mesh );
