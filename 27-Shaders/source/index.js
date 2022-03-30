@@ -55,3 +55,6 @@ renderer.setAnimationLoop( function loop() {
     renderer.render( scene, camera );
 
 } );
+
+/* My code */
+const material = new three.RawShaderMaterial();
