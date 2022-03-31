@@ -60,6 +60,7 @@ const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
 const material = new three.RawShaderMaterial( {
     vertexShader: test_vertex_shader,
     fragmentShader: test_fragment_shader,
+    wireframe: false,
 } );
 const mesh = new three.Mesh( geometry, material );
 
