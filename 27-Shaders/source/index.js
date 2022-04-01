@@ -57,10 +57,23 @@ renderer.setAnimationLoop( function loop() {
 
 /* My code */
 const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
+const position_num = geometry.attributes.position.count;
+const randoms = new Float32Array( position_num );
+
+for ( let i = 0; i < position_num; i++ ) {
+
+    randoms[ i ] = Math.random();
+
+}
+
+geometry.setAttribute( "aRandom", new three.BufferAttribute( randoms, 1 ) );
+
+
 const material = new three.RawShaderMaterial( {
     vertexShader: test_vertex_shader,
     fragmentShader: test_fragment_shader,
-    wireframe: false,
+    wireframe: true,
+    transparent: true,
 } );
 const mesh = new three.Mesh( geometry, material );
 
