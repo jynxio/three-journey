@@ -6,7 +6,7 @@ import * as three from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-import Gui from "lil-gui";
+import Gui, { GUI } from "lil-gui";
 
 import test_vertex_shader from "./vertex.glsl";
 
@@ -46,15 +46,6 @@ window.addEventListener( "resize", _ => {
 
 } );
 
-/* Render */
-renderer.setAnimationLoop( function loop() {
-
-    controls.update();
-
-    renderer.render( scene, camera );
-
-} );
-
 /* My code */
 const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
 const position_num = geometry.attributes.position.count;
@@ -68,13 +59,38 @@ for ( let i = 0; i < position_num; i++ ) {
 
 geometry.setAttribute( "aRandom", new three.BufferAttribute( randoms, 1 ) );
 
-
 const material = new three.RawShaderMaterial( {
     vertexShader: test_vertex_shader,
     fragmentShader: test_fragment_shader,
     wireframe: true,
     transparent: true,
+    uniforms: {
+        uFrequency: { value: new three.Vector2( 10, 5 ) },
+        uTime: { value: 0 },
+        uColor: { value: new three.Color( "orange" ) },
+    }
 } );
 const mesh = new three.Mesh( geometry, material );
 
+mesh.scale.y = 2 / 3;
 scene.add( mesh );
+
+/* GUI */
+const gui = new GUI();
+
+gui.add( material.uniforms.uFrequency.value, "x" ).min( 0 ).max( 20 ).step( 0.01 ).name( "frequencyX" );
+gui.add( material.uniforms.uFrequency.value, "y" ).min( 0 ).max( 20 ).step( 0.01 ).name( "frequencyY" );
+
+/* Render */
+const clock = new three.Clock();
+
+renderer.setAnimationLoop( function loop() {
+
+    const  elapsed_time = clock.getElapsedTime();
+
+    material.uniforms.uTime.value = elapsed_time;
+
+    controls.update();
+    renderer.render( scene, camera );
+
+} );
