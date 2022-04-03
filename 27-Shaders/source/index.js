@@ -59,6 +59,8 @@ for ( let i = 0; i < position_num; i++ ) {
 
 geometry.setAttribute( "aRandom", new three.BufferAttribute( randoms, 1 ) );
 
+const texture_loader = new three.TextureLoader();
+const flag_texture = texture_loader.load( "/static/flag-french.jpg" );
 const material = new three.RawShaderMaterial( {
     vertexShader: test_vertex_shader,
     fragmentShader: test_fragment_shader,
@@ -68,6 +70,7 @@ const material = new three.RawShaderMaterial( {
         uFrequency: { value: new three.Vector2( 10, 5 ) },
         uTime: { value: 0 },
         uColor: { value: new three.Color( "orange" ) },
+        uTexture: { value: flag_texture },
     }
 } );
 const mesh = new three.Mesh( geometry, material );

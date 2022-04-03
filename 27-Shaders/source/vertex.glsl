@@ -5,25 +5,22 @@ uniform vec2 uFrequency;
 uniform float uTime;
 
 attribute vec3 position;
-// attribute float aRandom;
+attribute vec2 uv;
 
-// varying float vRandom;
+varying vec2 vUv;
 
 void main() {
 
-    // vRandom = aRandom;
+    vUv = uv;
 
-    vec4 model_position = modelMatrix * vec4( position, 1.0 );
+    vec4 modelPosition = modelMatrix * vec4( position, 1.0 );
 
-    model_position.z += sin( model_position.x * uFrequency.x - uTime ) * 0.1;
-    model_position.z += sin( model_position.y * uFrequency.y - uTime ) * 0.1;
-    // model_position.z += aRandom * 0.1;
-    // model_position.z += sin( model_position.x * 10.0 ) * 0.05;
-    // model_position.z += cos( model_position.y * 10.0 ) * 0.05;
+    modelPosition.z += sin( modelPosition.x * uFrequency.x - uTime ) * 0.1;
+    modelPosition.z += sin( modelPosition.y * uFrequency.y - uTime ) * 0.1;
 
-    vec4 view_position = viewMatrix * model_position;
-    vec4 projection_position = projectionMatrix * view_position;
+    vec4 viewPosition = viewMatrix * modelPosition;
+    vec4 projectionPosition = projectionMatrix * viewPosition;
 
-    gl_Position = projection_position;
+    gl_Position = projectionPosition;
 
 }
