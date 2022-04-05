@@ -25,34 +25,36 @@ document.body.append( renderer.domElement );
 const scene = new three.Scene();
 
 /* Camera */
-const camera = new three.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.01, 100 );
+const aspect = window.innerWidth / window.innerHeight;
+const camera = new three.OrthographicCamera( - 1, 1, 1 * aspect, - 1 * aspect, 0.1, 10 );
 
-camera.position.set(0.25, - 0.25, 1)
+camera.position.set( 0, 0, 1 );
 scene.add( camera );
-
-/* Controls */
-const controls = new OrbitControls( camera, renderer.domElement );
-
-controls.enableDamping = true;
 
 /* Resize */
 window.addEventListener( "resize", _ => {
 
+    const aspect = window.innerWidth / window.innerHeight;
+
+    camera.top = 1 * aspect;
+    camera.bottom = - 1 * aspect;
+    camera.updateProjectionMatrix();
+
     renderer.setPixelRatio( Math.min( window.devicePixelRatio, 2 ) );
     renderer.setSize( window.innerWidth, window.innerHeight);
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
 
 } );
 
 /* My code */
-const geometry = new three.PlaneGeometry( 1, 1, 32, 32 );
+const geometry = new three.PlaneGeometry( 2, 2 * aspect, 128, 128 );
 const material = new three.RawShaderMaterial( {
     vertexShader: test_vertex_shader,
     fragmentShader: test_fragment_shader,
     wireframe: false,
     side: three.DoubleSide,
+    uniforms: {
+        uTime: { value: 0 },
+    },
 } );
 const mesh = new three.Mesh( geometry, material );
 
@@ -63,7 +65,9 @@ const clock = new three.Clock();
 
 renderer.setAnimationLoop( function loop() {
 
-    controls.update();
+    const elapsed_time = clock.getElapsedTime();
+
+    material.uniforms.uTime.value = elapsed_time;
     renderer.render( scene, camera );
 
 } );
